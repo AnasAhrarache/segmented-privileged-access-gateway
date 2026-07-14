@@ -4,7 +4,7 @@ A personal security lab demonstrating that privileged access to a protected serv
 
 Built with **FortiGate** (network segmentation and policy enforcement) and **JumpServer** (privileged access broker), orchestrated in **GNS3** on top of **VMware Workstation**.
 
-> 📄 Full write-up: [`report/report_english.pdf`](report/report_english.pdf) (French version also included)
+> 📄 Full write-up: [`report/report_english.pdf`](report/report_english.pdf)
 > 🔧 Full FortiGate configuration trail: [`configs/fortigate-policies.md`](configs/fortigate-policies.md)
 
 ---
@@ -75,24 +75,24 @@ During a SOC internship, I worked daily with FortiGate, Forcepoint, and Wallix B
 
 A polished, vector version of this diagram — along with a step-by-step functional flow diagram (authentication → authorization check → credential vault → session brokering → recording) — is included in the full PDF report.
 
-| Zone | FortiGate Interface | Subnet | Host |
-|---|---|---|---|
-| Administration | port1 | `10.10.10.0/24` | AdminVM-1 — `10.10.10.10` |
-| PAM Broker | port3 | `10.10.20.0/24` | Broker_VM-1 (JumpServer) — `10.10.20.10` |
-| Server | port2 | `10.10.30.0/24` | Server_VM-1 — `10.10.30.10` |
+| Zone           | FortiGate Interface | Subnet          | Host                                     |
+| -------------- | ------------------- | --------------- | ---------------------------------------- |
+| Administration | port1               | `10.10.10.0/24` | AdminVM-1 — `10.10.10.10`                |
+| PAM Broker     | port3               | `10.10.20.0/24` | Broker_VM-1 (JumpServer) — `10.10.20.10` |
+| Server         | port2               | `10.10.30.0/24` | Server_VM-1 — `10.10.30.10`              |
 
 ---
 
 ## Tools Used
 
-| Tool | Purpose |
-|---|---|
-| [GNS3](https://www.gns3.com/) | Network topology orchestration, linking VMware VMs into a single virtual network |
-| [VMware Workstation Pro](https://www.vmware.com/products/workstation-pro.html) | Hypervisor hosting every VM in the lab |
-| [FortiGate](https://www.fortinet.com/products/next-generation-firewall) (VM64) | Firewall enforcing network segmentation and access policies |
-| Ubuntu Desktop | Administration workstation (AdminVM) |
-| Ubuntu Server | Protected target (Server_VM) and PAM broker host (Broker_VM) |
-| [JumpServer](https://github.com/jumpserver/jumpserver) | Open-source Privileged Access Management (PAM) platform |
+| Tool                                                                           | Purpose                                                                          |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| [GNS3](https://www.gns3.com/)                                                  | Network topology orchestration, linking VMware VMs into a single virtual network |
+| [VMware Workstation Pro](https://www.vmware.com/products/workstation-pro.html) | Hypervisor hosting every VM in the lab                                           |
+| [FortiGate](https://www.fortinet.com/products/next-generation-firewall) (VM64) | Firewall enforcing network segmentation and access policies                      |
+| Ubuntu Desktop                                                                 | Administration workstation (AdminVM)                                             |
+| Ubuntu Server                                                                  | Protected target (Server_VM) and PAM broker host (Broker_VM)                     |
+| [JumpServer](https://github.com/jumpserver/jumpserver)                         | Open-source Privileged Access Management (PAM) platform                          |
 
 ---
 
@@ -120,15 +120,15 @@ A polished, vector version of this diagram — along with a step-by-step functio
 
 Every claim in this project was tested, not assumed:
 
-| Test | From → To | Expected | Result |
-|---|---|---|---|
-| Baseline (no policy) | Admin → Server | Denied | ✅ 100% packet loss |
-| Temporary policy active | Admin → Server | Allowed | ✅ 0% packet loss |
-| After policy removal | Admin → Server | Denied | ✅ 100% packet loss again |
-| Final policy | Admin → Broker | Allowed | ✅ Reachable (HTTP/HTTPS) |
-| Final policy | Broker → Server | Allowed | ✅ Reachable (SSH) |
-| Final policy | Admin → Server | Denied | ✅ No path exists — no policy permits it |
-| Session brokering | Operator1 → Server_VM-1 via JumpServer | Connects without exposing real password | ✅ Verified, session fully recorded |
+| Test                    | From → To                              | Expected                                | Result                                   |
+| ----------------------- | -------------------------------------- | --------------------------------------- | ---------------------------------------- |
+| Baseline (no policy)    | Admin → Server                         | Denied                                  | ✅ 100% packet loss                      |
+| Temporary policy active | Admin → Server                         | Allowed                                 | ✅ 0% packet loss                        |
+| After policy removal    | Admin → Server                         | Denied                                  | ✅ 100% packet loss again                |
+| Final policy            | Admin → Broker                         | Allowed                                 | ✅ Reachable (HTTP/HTTPS)                |
+| Final policy            | Broker → Server                        | Allowed                                 | ✅ Reachable (SSH)                       |
+| Final policy            | Admin → Server                         | Denied                                  | ✅ No path exists — no policy permits it |
+| Session brokering       | Operator1 → Server_VM-1 via JumpServer | Connects without exposing real password | ✅ Verified, session fully recorded      |
 
 Full command-level detail for every FortiGate step is in [`configs/fortigate-policies.md`](configs/fortigate-policies.md).
 
@@ -149,7 +149,7 @@ All screenshots are in [`screenshots/`](screenshots/), organized by stage:
 This project is deliberately scoped, and its boundaries are documented rather than hidden:
 
 - **FortiGate self-administration**: AdminVM-1 currently retains access to FortiGate's own configuration interface. In production, firewall management would sit on a dedicated, out-of-band management network — not reachable from any operational zone. See the report for the full discussion.
-- **Compromised endpoint + legitimate broker session**: network segmentation prevents any *direct* bypass of the broker, but does not by itself prevent an attacker who has also obtained `Operator1`'s active JumpServer session from using it exactly as the legitimate user would. MFA, short session lifetimes, and command filtering (all discussed in the report) address this gap.
+- **Compromised endpoint + legitimate broker session**: network segmentation prevents any _direct_ bypass of the broker, but does not by itself prevent an attacker who has also obtained `Operator1`'s active JumpServer session from using it exactly as the legitimate user would. MFA, short session lifetimes, and command filtering (all discussed in the report) address this gap.
 - **Not a complete Zero Trust architecture**: this project applies specific Zero Trust principles (deny-by-default, explicit enforcement, least privilege, separation of duties) to the privileged-access perimeter. It does not implement a centralized identity provider, continuous identity/context verification, endpoint posture checks, or a dynamic policy engine — the components required for a full, organization-wide Zero Trust model.
 - **Zone-level, not host-level, policies**: policies are currently scoped per interface/zone. Adding a second host to an existing zone would inherit that zone's policy automatically. Tightening this further would require FortiGate address objects scoped to individual hosts.
 
@@ -180,8 +180,7 @@ Importantly, the network segmentation and FortiGate policies designed here are *
 segmented-privileged-access-gateway/
 ├── README.md
 ├── report/
-│   ├── report_english.pdf
-│   └── rapport.pdf              # French version
+│   └── report_english.pdf
 ├── configs/
 │   └── fortigate-policies.md    # Full FortiGate CLI/GUI configuration trail
 └── screenshots/
